@@ -1,60 +1,128 @@
+
 # FLASK_APP=app.py flask run
 
-from raspberry import RaspberryThread
-from lightshow import blink_all, all_pins_off, lightshow, cycle_all
-from flask import Flask, render_template
+from flask import Flask, render_template, request
+from myThreads import blinkThread, playLightThread , playMusicThread
+from lightshow import blink_all, all_pins_off, getInterval
 import os
+import RPi.GPIO as GPIO
 
-# Load the env variables
-if os.path.exists('.env'):
-    print('Importing environment from .env...')
-    for line in open('.env'):
-        var = line.strip().split('=')
-        if len(var) == 2:
-            os.environ[var[0]] = var[1]
+import pyaudio
+import wave
 
 app = Flask(__name__)
+# __name__ = '__main__'
+
+
+
+
+# if __name__ == '__main__':
+
+    # Create threads
+
+blink_thread = blinkThread()
+playmusic_thread = playMusicThread("music/song3.wav")
+playlights_thread = playLightThread(0)
+    
+
+threads = [
+    blink_thread,
+    playmusic_thread,
+    playlights_thread
+]
+    
 
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
+@app.route("/blink", methods=["GET"])
+def blink_view():
+    global blink_thread, threads
+    
+
+
+    for thread in threads:
+        if thread.is_alive():
+            thread.kill()
+
+
+    blink_thread = blinkThread()
+    blink_thread.start()
+
+    # Unpause and execute function
+    return "blink started"
+
+
 @app.route("/lightshow", methods=["GET"])
 def lightshow_view():
-    any(thread.pause() for thread in threads)
-    if not lightshow_thread.isAlive():
-        lightshow_thread.start()
-    lightshow_thread.resume()
-    return "lightshow started"
+    
+    global  playlights_thread, playmusic_thread
+    song = 'music/' + request.args.get('song') + '.wav'
+
+    interval = getInterval(song)
+   
+    print(interval)
+
+
+    for thread in threads:
+        if thread.is_alive():
+            thread.kill()
+
+
+    playlights_thread = playLightThread(interval)
+    playmusic_thread = playMusicThread(song)
+    
+    playlights_thread.start()
+    playmusic_thread.start()
+
+    return "show started"
+
 
 @app.route("/shutdown", methods=['GET'])
 def shutdown():
+    global blink_thread
+
+    blink_thread.kill()
+    playlights_thread.kill()
+    playmusic_thread.kill()
+
     all_pins_off()
-    any(thread.pause() for thread in threads)
+    any(thread.kill() for thread in threads)
+
     return "all threads paused"
 
 
 
 
-if __name__ == '__main__':
-    # Create threads
-    blink_thread = RaspberryThread(function=blink_all)
-    lightshow_thread = RaspberryThread(function=lightshow)
-    russian_xmas_thread = RaspberryThread(function=russian_xmas)
-    cycle_all_thread = RaspberryThread(function=cycle_all)
+app.run(
+    host='0.0.0.0', 
+    debug=True,
+    threaded=True)
 
-    # collect threads
+
+'''
+
+if __name__ == '__main__':
+
+    # Create threads
+
+    blink_thread = RaspberryThread(function=blink_all)
+    playmusic_thread = RaspberryThread(function=playMusic)
+    playlights_thread = RaspberryThread(function=playLights)
+    
+
     threads = [
         blink_thread,
-        lightshow_thread,
-        russian_xmas_thread,
-        cycle_all_thread
+        playmusic_thread,
+        playlights_thread
     ]
-
+    
     # Run server
     app.run(
+        host='0.0.0.0', 
         debug=True,
-        host=os.environ.get("IP_ADDRESS"),
-        port=int(os.environ.get("PORT")),
         threaded=True)
+
+'''        

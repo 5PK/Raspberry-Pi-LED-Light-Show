@@ -1,0 +1,14 @@
+RED = GROUND | 30
+ORANGE = BCM 1 | 28
+YELLOW = BCM 7 | 26
+GREEN = BCM 8 | 24
+BLUE = BCM 25 | 22
+
+From the closest Transistor to edge
+
+
+
+1. IRF510
+2. ZVN3310A needs two 100 ohm resistors in paralell 
+3. TIP31C 
+

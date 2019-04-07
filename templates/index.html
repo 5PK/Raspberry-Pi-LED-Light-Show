@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Xmas Lights</title>
+    <title>LightShow</title>
     <script src="static/script.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
     <style>
@@ -13,6 +13,11 @@
         margin-bottom: 1em;
         font-size: 2em;
     }
+    select{
+	display:block;
+	margin: 1em;
+    }
+
     </style>
 </head>
 
@@ -21,20 +26,26 @@
         <div class="row">
             <h3 id="message"></h3>
         </div>
+	<div>
+	    	<select id="songList">
+			<option value="song1" >Castle On the Hill</option>
+			<option value="song2" >All Star</option>
+			<option value="song3" >Can't Help Falling in Love</option>
+		</select>
+	</div>
         <div class="row">
             <div class="col s6">
                 <button style="background-color:pink;" onclick="ajaxRequest('/blink')">Blink</button>
-                <button style="background-color:lightblue;" onclick="ajaxRequest('/cycleall') ">Cycle All</button>
             </div>
             <div class="col s6 ">
-                <button style="background-color:lightgreen;" onclick="ajaxRequest('/lightshow') ">LightShow</button>
-                <button style="background-color:lightyellow;" onclick="ajaxRequest('/russianxmas') ">Russian Xmas</button>
+		<button style="background-color:lightgreen;" onclick="songRequest('/lightshow?song=')">LightShow</button>
             </div>
         </div>
         <div class="row">
             <button style="background-color:red;" onclick="ajaxRequest('/shutdown')">Shutdown</button>
         </div>
     </div>
+
 </body>
 
 </html>
